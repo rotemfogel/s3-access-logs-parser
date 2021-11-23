@@ -13,7 +13,7 @@ import scopt.OptionParser
 import java.sql.Date
 import java.time.LocalDateTime
 
-case class S3AccessLogsConfig(inputBucket: Option[String] = None,
+case class S3AccessLogsConfig(inputPath: Option[String] = None,
                               prefix: Option[String] = Some(""),
                               inputDateTime: Option[LocalDateTime] = None,
                               outputPath: Option[String] = None,
@@ -21,7 +21,7 @@ case class S3AccessLogsConfig(inputBucket: Option[String] = None,
 
 // @formatter:off
 object S3AccessLogsParser extends OptionParser[S3AccessLogsConfig](programName = "S3AccessLogsApp Application") {
-  opt[String]("input-bucket")   .required.action { (x, p) => p.copy(inputBucket = Some(x)) }
+  opt[String]("input-path")     .required.action { (x, p) => p.copy(inputPath = Some(x)) }
   opt[String]("prefix")                  .action { (x, p) => p.copy(prefix = Some(x)) }
   opt[String]("input-datetime") .required.action { (x, p) => p.copy(inputDateTime = Some(LocalDateTime.parse(x, dateHourPatternFormatter))) }
   opt[String]("output-path")    .required.action { (x, p) => p.copy(outputPath = Some(x)) }
@@ -40,7 +40,7 @@ object S3AccessLogsApp extends BaseApplication[S3AccessLogsConfig](S3AccessLogsC
 
   def doWork(implicit p: S3AccessLogsConfig, spark: SQLContext): Unit = {
     val dateString: String = p.inputDateTime.get.format(dateHourPatternFormatter)
-    val inputBucket = if (p.inputBucket.get.endsWith("/")) p.inputBucket.get else s"${p.inputBucket.get}/"
+    val inputBucket = if (p.inputPath.get.endsWith("/")) p.inputPath.get else s"${p.inputPath.get}/"
     val path = s"$inputBucket${p.prefix.get}$dateString*"
 
     val jsonDf = spark.read
